@@ -1,0 +1,43 @@
+---
+title: "p8105_hw2_sm5134"
+author: "Sneha Mehta"
+date: "2022-10-04"
+output: github_document
+---
+
+```{r setup, message=FALSE}
+library(tidyverse)
+library(readxl)
+```
+
+## Problem 1: Cleaning NYC Transit Data
+Importing and viewing the dataset:
+```{r}
+nyc_transit = read_csv("./NYC_Transit_Subway_Entrance_And_Exit_Data.csv")
+tail(nyc_transit)
+skimr::skim(nyc_transit)
+janitor::clean_names(nyc_transit) %>% select(line, station_name, station_latitude, station_longitude, starts_with("route"), entrance_type, entry, exit_only, ada) %>% mutate(entry = ifelse(entry == "YES", TRUE, FALSE))
+```
+
+
+Write a short paragraph about this dataset – explain briefly what variables the dataset contains, describe your data cleaning steps so far, and give the dimension (rows x columns) of the resulting dataset. Are these data tidy?
+
+Answer the following questions using these data:
+
+How many distinct stations are there? Note that stations are identified both by name and by line (e.g. 125th St 8th Avenue; 125st Broadway; 125st Lenox); the distinct function may be useful here.
+How many stations are ADA compliant?
+What proportion of station entrances / exits without vending allow entrance? 
+
+## Problem 2: Mr. Trash Wheel
+```{r mrtrash}
+mrtrash = read_excel("./Trash Wheel Collection Data.xlsx", range = "Mr. Trash Wheel!A2:N549") %>% 
+  janitor::clean_names() %>% 
+  mutate(sports_balls = as.integer(sports_balls))
+```
+
+Repeating with Professor Trash Wheel
+```{r proftrash}
+proftrash = read_excel("./Trash Wheel Collection Data.xlsx", range = "Professor Trash Wheel!A2:M96") %>% 
+  janitor::clean_names()
+```
+
