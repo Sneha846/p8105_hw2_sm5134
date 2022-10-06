@@ -53,15 +53,20 @@ nyc_transit %>%
 
 ## Problem 2: Mr. Trash Wheel
 ```{r mrtrash}
-mrtrash = read_excel("./Trash Wheel Collection Data.xlsx", range = "Mr. Trash Wheel!A2:N549") %>% 
+mrtrash = read_excel("./Trash Wheel Collection Data.xlsx", range = "Mr. Trash Wheel!A2:N549") %>%  
   janitor::clean_names() %>% 
-  mutate(sports_balls = as.integer(sports_balls)) %>% mutate(wheel = "mister")
+  drop_na(dumpster) %>%
+  mutate(sports_balls = as.integer(sports_balls)) %>%
+  mutate(wheel = "mister")
 ```
 
 Repeating with Professor Trash Wheel
 ```{r proftrash}
 proftrash = read_excel("./Trash Wheel Collection Data.xlsx", range = "Professor Trash Wheel!A2:M96") %>% 
-  janitor::clean_names() %>% mutate(wheel = "professor")%>% mutate(year = as.character(year))
+  janitor::clean_names() %>%
+  drop_na(dumpster) %>% 
+  mutate(wheel = "professor")%>% 
+  mutate(year = as.character(year))
 ```
 
 Joining mrtrash and proftrash data
@@ -79,14 +84,14 @@ sum(trashjoin$weight_tons)
 There are 641 observations (dumpsters) with 15 variables in the resulting dataset. Key variables in this dataset include weight of trash gathered (in tons) and amounts of the various types of trash gathered (including but not limited to chip bags, plastic bottles, cigarette butts, polystyrene, etc.) Both trash wheels gathered a combined total of 1938 tons of trash. Professor Trash Wheel collected `r sum(trashjoin[which(trashjoin$wheel=="professor"), "weight_tons"])` tons of trash. Mr. Trash Wheel gathered `r sum(trashjoin[which(trashjoin$year=="2020" & trashjoin$wheel == "mister"), "sports_balls"])` sports balls in 2020. 
 
 
-##Problem 3:FiveThirtyEight
+## Problem 3:FiveThirtyEight
 ```{r import and clean pols-month}
 pols_month = read_csv("./fivethirtyeight_datasets/pols-month.csv") %>% 
   janitor::clean_names() %>% 
-  separate(mon, into = c("year", "month", "day"), sep = "-", convert = TRUE) %>% 
+  separate(mon, into = c("month", "day", "year"), sep = "/", convert = TRUE) %>% 
+  mutate(year = as.numeric(year)) %>% 
   mutate(month = month.abb[month]) %>% 
-  mutate(president = case_when(prez_gop == 1 ~ "gop", 
-                               prez_dem == 1 ~ "dem")) %>% 
+  mutate(president = case_when(prez_gop == 1 ~ "gop", prez_dem == 1 ~ "dem")) %>% 
   select(-prez_dem, -prez_gop, -day)
 
 ```
@@ -109,7 +114,8 @@ unemp = read_csv("./fivethirtyeight_datasets/unemployment.csv") %>%
 ```
 ```{r merging datasets}
 snp_pols = left_join(pols_month, snp)
-merged_data = left_join(snp_pols, unemp, by = c("year", "month"))
+merged_data = left_join(snp_pols, unemp, by = c("year", "month")) %>% 
+  mutate(year = as.numeric(year))
 summary(merged_data$year)
 ```
 This dataset describes several measures of politics and the economy in the United States across several election years. The dataset has 822 observations and 11 variables. Key variables include election date (year and month) ranging from 1947-2015, unemployment rate on the year and month of the election, closing value of the S&P stock index on the election date, number of government representatives in office on the date of the election by political party.
